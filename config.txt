@@ -1,0 +1,11 @@
+BIN         /opt/var_calling
+REF_DIR     testing_ground 
+INDEX_DIR   testing_ground
+ANNOTATOR   snpeff
+SAMPLE_TYPE exome
+CANCER      no
+ALIGNER     bwa
+GENOTYPER   gatk
+FASTA       testing_ground/ref.fa 
+THREADS     100
+READS_DIR   logs
