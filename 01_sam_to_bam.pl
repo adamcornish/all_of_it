@@ -5,10 +5,10 @@ use Getopt::Std;
 
 my %opt;
 getopt ( "c:n:", \%opt );
-my $name         = $opt{n};
-my $config       = `cat $opt{c}`;
-my $aligner      = ( $config =~ /ALIGNER\s+(\S+)/ )     ? $1 : "bowtie2"; # can be "bwa", "bowtie2", or "both"
-my $reads_dir    = ( $config =~ /READS_DIR\s+(\S+)/ )   ? $1 : ".";
+my $name        = $opt{n};
+my $config      = `cat $opt{c}`;
+my ($aligner)   = $config =~ /ALIGNER\s+(\S+)/; # can be "bwa", "bowtie2", or "both"
+my ($reads_dir) = $config =~ /READS_DIR\s+(\S+)/;
 
 if ( $aligner =~ /(?:bowtie2|both)/i )
 {
