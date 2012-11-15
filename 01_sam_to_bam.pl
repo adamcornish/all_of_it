@@ -22,7 +22,7 @@ if ( $aligner =~ /(?:bowtie2|both)/i )
 ##PBS -o /work/unmc_ngs/acornish/$name.bt2.sam_to_bam.stdout
 cd $reads_dir
 samtools view -bS tmp/$name.bt2.sam -o tmp/$name.bt2.bam
-perl 02_sort_sam.pl -c $config_file -n $name
+perl 02_sort_bam.pl -c $config_file -n $name
 END
     open OUT, ">qsub/01_$name.bt2.sam_to_bam.qsub";
     print OUT $sub_script;
@@ -40,7 +40,7 @@ if ( $aligner =~ /(?:bwa|both)/i )
 ##PBS -o /work/unmc_ngs/acornish/$name.bwa.sam_to_bam.stdout
 cd $reads_dir
 samtools view -bS tmp/$name.bwa.sam -o tmp/$name.bwa.bam
-perl 02_sort_sam.pl -c $config_file -n $name
+perl 02_sort_bam.pl -c $config_file -n $name
 END
     open OUT, ">qsub/01_$name.bwa.sam_to_bam.qsub";
     print OUT $sub_script;

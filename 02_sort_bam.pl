@@ -3,6 +3,9 @@ use warnings;
 use strict;
 use Getopt::Std;
 
+## Sort bam
+# sorts the 
+
 my %opt;
 getopt ( "c:n:", \%opt );
 my $name        = $opt{n};
