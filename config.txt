@@ -1,11 +1,11 @@
 BIN         /opt/var_calling
-REF_DIR     testing_ground 
-INDEX_DIR   testing_ground
+REF_DIR     /safer/workspace/projects/all_of_it/testing_ground 
+INDEX_DIR   /safer/workspace/projects/all_of_it/testing_ground
 ANNOTATOR   snpeff
 SAMPLE_TYPE exome
 CANCER      no
-ALIGNER     bwa
+ALIGNER     both
 GENOTYPER   gatk
-FASTA       testing_ground/ref.fa 
+FASTA       /safer/workspace/projects/all_of_it/testing_ground/ref.fa 
 THREADS     100
-READS_DIR   logs
+READS_DIR   /safer/workspace/projects/all_of_it/testing_ground

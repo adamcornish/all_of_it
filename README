@@ -1,24 +1,27 @@
-This is the pipeline to run variant calling using GATK when given a single sample. In its current incarnation, it must be PE data.
+This is the pipeline to run variant calling. In its current incarnation the input data must be PE data, but that's not likely to change.
 
-The script can be run from any folder, but note that the output files will be placed in the folder that you run the script from.
+The script can be run from any folder, but note that the output files will be placed in the directory containing your fastq files.
 
-Usage: perl gorrammit.pl <configuration_file.txt>
+Usage: perl tusker.pl -c <configuration_file.txt>
 
-    Your configuration file MUST have a READS_DIR specified.
+    Your configuration file MUST have all of these variables defined in it.
 
     Configuration options available
 
-      OPTION    Default                                             Description
-      BIN         /opt/var_calling                                    Absolute location of the Picard Tools and GATK jar files
-      REF_DIR     /safer/genomes/Homo_sapiens/UCSC/hg19               Absolute location of the reference directory
-      INDEX_DIR   REF_DIR/Sequence/BowtieIndex                        Absolute location of your reference indexes
-      FASTA       REF_DIR/Sequence/WholeGenomeFasta/ucsc.hg19.fasta   Absolute location of the reference fasta file
-      READS_DIR   .                                                   Absolute location of the reads that are going to be used
-      ANNOTATOR   snpeff                                              Annotator to use: snpeff or annovar
-      SAMPLE_TYPE exome                                               Sample type: exome or rna-seq
-      CANCER      yes                                                 Whether or not this is a cancer sample: yes, no, true, false
-      ALIGNER     bowtie2                                             Aligner to use: bowtie2, bwa, or both
-      GENOTYPER   gatk                                                Genotyper to use: GATK, mpileup, or both
-      THREADS     24                                                  Number of threads to use in parallelizable modules
-      NAME        serenity                                            The name you want to give to this experiment
+      VARIABLE    Description                                                   Options
+      BIN         Absolute location of the Picard Tools and GATK jar files      Not applicable
+      INDEX_DIR   Absolute location of your bowtie2 / bwa indexes               Not applicable
+      READS_DIR   Absolute location of the fastq files to be used               Not applicable
+      FASTA       Absolute location of the reference fasta file                 Not applicable
+      DBSNP       Absolute location of the dbnsp vcf file                       Not applicable
+      HAPMAP      Absolute location of the hapmap vcf file                      Not applicable
+      OMNI        Absolute location of the omni vcf file                        Not applicable
+      MILLS       Absolute location of the mills vcf file                       Not applicable
+      ANNOTATOR   The variant annotator to use                                  snpEff, ANNOVAR
+      SAMPLE_TYPE The type of sequencing that was done                          exome, rnaseq
+      CANCER      Whether or not this is a cancer sample                        yes, no, true, false
+      ALIGNER     The aligner software that to use                              bowtie2, bwa, both
+      GENOTYPER   The genotyper to use                                          GATK (UnifiedGenotyper), mpileup
+      THREADS     Number of threads to use in parallelizable modules            1 < n < max number of cores on the system
+      NAME        The name you want to give to this experiment                  Serenity, bob, darth, I really don't care; just don't use spaces in the name.
 
