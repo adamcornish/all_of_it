@@ -40,7 +40,7 @@ cd $reads_dir
 bowtie2 --rg-id $name --rg PL:illumina --rg PU:$name --rg LB:$name --rg SM:$name $aln_method -x $btx -p $threads -1 $R1 -2 $R2 -S tmp/$name.bt2.sam
 perl 01_sam_to_bam.pl -c $config_file
 END
-        open OUT, ">qsub/00_$name.bt2_aln.qsub";
+        open OUT, ">qsub/00_$name.bt2.aln.qsub";
         print OUT $sub_script;
         close OUT;
     }
@@ -60,11 +60,11 @@ bwa aln $fasta $R2 > tmp/$name.r2.sai
 bwa sampe -r '\@RG\\tID:$name\\tPL:illumina\\tPU:$name\\tLB:$name\\tSM:$name' $fasta tmp/$name.r1.sai tmp/$name.r2.sai $R1 $R2 > tmp/$name.bwa.sam
 perl 01_sam_to_bam.pl -c $config_file
 END
-        open OUT, ">qsub/00_$name.bwa_aln.qsub";
+        open OUT, ">qsub/00_$name.bwa.aln.qsub";
         print OUT $sub_script;
         close OUT;
     }
-   #system ( "qsub *$name*_aln.qsub*" ); # doing this will make it so we submit either one or two qsub scripts
+   #system ( "qsub qsub/00_$name*.qsub" ); # doing this will make it so we submit either one or two qsub scripts
 }
 
 #TODO add tophat for rnaseq to do fusion detection

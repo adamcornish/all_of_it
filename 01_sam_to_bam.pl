@@ -46,4 +46,4 @@ END
     print OUT $sub_script;
     close OUT;
 }
-#system ( "qsub *$name*_aln.qsub*" ); # doing this will make it so we submit either one or two qsub scripts
+#system ( "qsub qsub/01_$name*.qsub" ); # doing this will make it so we submit either one or two qsub scripts
