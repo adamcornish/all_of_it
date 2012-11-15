@@ -7,15 +7,15 @@ my %opt;
 getopt ( "c:", \%opt );
 my $config_file = $opt{c};
 my $config      = `cat $config_file`;
-my $ref_dir     = $config =~ /REF_DIR\s+(\S+)/;
-my $index_dir   = $config =~ /INDEX_DIR\s+(\S+)/;
-my $sample_type = $config =~ /SAMPLE_TYPE\s+(\S+)/; # can be "exome" or "rna-seq"
-my $cancer      = $config =~ /CANCER\s+(\S+)/;      # can be "yes" or "no"
-my $aligner     = $config =~ /ALIGNER\s+(\S+)/;     # can be "bwa", "bowtie2", or "both"
-my $fasta       = $config =~ /FASTA\s+(\S+)/;
-my $threads     = $config =~ /THREADS\s+(\S+)/;
-my $reads_dir   = $config =~ /READS_DIR\s+(\S+)/;
-my $exp_name    = $config =~ /NAME\s+(\S+)/;
+my ($ref_dir)     = $config =~ /REF_DIR\s+(\S+)/;
+my ($index_dir)   = $config =~ /INDEX_DIR\s+(\S+)/;
+my ($sample_type) = $config =~ /SAMPLE_TYPE\s+(\S+)/; # can be "exome" or "rna-seq"
+my ($cancer)      = $config =~ /CANCER\s+(\S+)/;      # can be "yes" or "no"
+my ($aligner)     = $config =~ /ALIGNER\s+(\S+)/;     # can be "bwa", "bowtie2", or "both"
+my ($fasta)       = $config =~ /FASTA\s+(\S+)/;
+my ($threads)     = $config =~ /THREADS\s+(\S+)/;
+my ($reads_dir)   = $config =~ /READS_DIR\s+(\S+)/;
+my ($exp_name)    = $config =~ /NAME\s+(\S+)/;
 
 chomp ( my @reads = `ls $reads_dir/*fastq` );
 

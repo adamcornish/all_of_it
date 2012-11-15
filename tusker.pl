@@ -3,13 +3,11 @@ use warnings;
 use strict;
 use Getopt::Std;
 
-usage() unless $#ARGV == 0;
-
 my %opt;
-getopt ( "c:", \%opt );
+getopt ( "hc:", \%opt );
+usage() if ( $opt{h} or !$opt{c} );
 my $config_file = $opt{c};
 my $config      = `cat $config_file`;
-usage() if $config !~ /READS_DIR/;
 
 ######## Start Variables ########
 # TODO add option for dry run; i.e. do not do system ( "qsub submit_script.qsub" ); unless $dry_run = false
@@ -59,8 +57,8 @@ die "The 'READS_DIR' directory, $reads_dir, does not exist. Exiting.\n"         
 die "The genome fasta file, $fasta, does not exist. Exiting.\n"                              unless ( -e $fasta );
 die "The dbsnp vcf file, $dbsnp, does not exist. Exiting.\n"                                 unless ( -e $dbsnp);
 die "The omni vcf file, $omni, does not exist. Exiting.\n"                                   unless ( -e $omni);
-die "The hapmap vcf file, $fasta, does not exist. Exiting.\n"                                unless ( -e $hapmap);
-die "The mills vcf file, $fasta, does not exist. Exiting.\n"                                 unless ( -e $mills);
+die "The hapmap vcf file, $hapmap, does not exist. Exiting.\n"                               unless ( -e $hapmap);
+die "The mills vcf file, $mills, does not exist. Exiting.\n"                                 unless ( -e $mills);
 die "The 'READS_DIR' directory, $reads_dir, does not contain any fastq files. Exiting.\n"    unless ( `ls $reads_dir/*fastq 2> /dev/null` );
 # Validate formatting
 die "Unknown annotator: your annotator options are 'annovar' or 'snpeff'. Exiting.\n"        unless ( $annotator =~ /(?:annovar|snpeff)/i );
