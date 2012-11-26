@@ -27,6 +27,7 @@ END
     open OUT, ">qsub/01_$name.bt2.sam_to_bam.qsub";
     print OUT $sub_script;
     close OUT;
+   #system ( "qsub 01_$name.bt2*.qsub" );
 }
 if ( $aligner =~ /(?:bwa|both)/i )
 {
@@ -45,5 +46,5 @@ END
     open OUT, ">qsub/01_$name.bwa.sam_to_bam.qsub";
     print OUT $sub_script;
     close OUT;
+   #system ( "qsub 01_$name.bwa*.qsub" );
 }
-#system ( "qsub qsub/01_$name*.qsub" ); # doing this will make it so we submit either one or two qsub scripts

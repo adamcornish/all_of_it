@@ -26,17 +26,18 @@ if ( $aligner =~ /(?:bowtie2|both)/i )
 ##PBS -o /work/unmc_ngs/acornish/$name.bt2.sort_bam.stdout
 cd $reads_dir
 java -jar $bin/SortSam.jar INPUT=tmp/$name.bt2.bam OUTPUT=tmp/$name.bt2.sorted.bam SORT_ORDER=coordinate VALIDATION_STRINGENCY=SILENT
-perl 02_sort_sam.pl -c $config_file -n $name
+perl 03_remove_duplicates.pl -c $config_file -n $name
 END
-    open OUT, ">qsub/02_$name.bt2.sort_sam.qsub";
+    open OUT, ">qsub/02_$name.bt2.sort_bam.qsub";
     print OUT $sub_script;
     close OUT;
+   #system ( "qsub 02_$name.bt2*.qsub" );
 }
 if ( $aligner =~ /(?:bwa|both)/i )
 {
     my $sub_script = <<END;
 #!/bin/sh
-##PBS -N $name.bwa.sam_to_bam
+##PBS -N $name.bwa.sort_bam
 ##PBS -l select=1
 ##PBS -l mem=4GB
 ##PBS -l walltime=6:00:00
@@ -44,10 +45,10 @@ if ( $aligner =~ /(?:bwa|both)/i )
 ##PBS -o /work/unmc_ngs/acornish/$name.bwa.sam_to_bam.stdout
 cd $reads_dir
 java -jar $bin/SortSam.jar INPUT=tmp/$name.bwa.bam OUTPUT=tmp/$name.bwa.sorted.bam SORT_ORDER=coordinate VALIDATION_STRINGENCY=SILENT
-perl 02_sort_sam.pl -c $config_file -n $name
+perl 03_remove_duplicates.pl -c $config_file -n $name
 END
-    open OUT, ">qsub/02_$name.bwa.sort_sam.qsub";
+    open OUT, ">qsub/02_$name.bwa.sort_bam.qsub";
     print OUT $sub_script;
     close OUT;
+   #system ( "qsub 02_$name.bwa*.qsub" );
 }
-#system ( "qsub 02_$name*.qsub" ); # doing this will make it so we submit either one or two qsub scripts

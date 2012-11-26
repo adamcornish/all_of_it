@@ -98,6 +98,7 @@ unless ( `ls $index_dir/$fa_name*bwt 2> /dev/null` )
     system ( "bwa index -a bwtsw $fasta > logs/bwa-index.log 2> logs/bwa-index.log" );
 }
 
+## All checks have passed, so start the pipeline
 system ( "perl 00_align.pl -c $config_file" );
 
 sub usage

@@ -43,6 +43,7 @@ END
         open OUT, ">qsub/00_$name.bt2.aln.qsub";
         print OUT $sub_script;
         close OUT;
+       #system ( "qsub 00_$name.bt2*.qsub" );
     }
     if ( $aligner =~ /(?:bwa|both)/i )
     {
@@ -63,8 +64,8 @@ END
         open OUT, ">qsub/00_$name.bwa.aln.qsub";
         print OUT $sub_script;
         close OUT;
+       #system ( "qsub 00_$name.bwa*.qsub" );
     }
-   #system ( "qsub qsub/00_$name*.qsub" ); # doing this will make it so we submit either one or two qsub scripts
 }
 
 #TODO add tophat for rnaseq to do fusion detection
