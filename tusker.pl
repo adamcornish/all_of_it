@@ -80,6 +80,7 @@ die "The location of the 'MILLS' file, $mills, should be presented as an absolut
 
 # Create needed directories
 system ( "mkdir $reads_dir/logs" ) unless -d "$reads_dir/logs";
+system ( "mkdir $reads_dir/tmp"  ) unless -d "$reads_dir/tmp";
 my ($ext)     = $fasta =~ /(\.fasta|\.fa)/;
 my ($fa_name) = $fasta =~ /.+\/(.+?)$ext/;
 
@@ -116,7 +117,7 @@ for ( my $i = 0; $i < @reads; $i += 2 )
         $id    = submit_step ( $id, "03_rm_dups.bt2",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
         $id    = submit_step ( $id, "04_indel_realigner.bt2",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
         $id    = submit_step ( $id, "05_base_recalibrator.bt2", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        $id    = submit_step ( $id, "06_genotyper.bt2",         "NAME", $name, "READS_DIR", $reads_dir );
+       #$id    = submit_step ( $id, "06_genotyper.bt2",         "NAME", $name, "READS_DIR", $reads_dir );
     }
     if ( $aligner =~ /(?:bwa|both)/i )
     {
@@ -126,7 +127,7 @@ for ( my $i = 0; $i < @reads; $i += 2 )
         $id    = submit_step ( $id, "03_rm_dups.bwa",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
         $id    = submit_step ( $id, "04_indel_realigner.bwa",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
         $id    = submit_step ( $id, "05_base_recalibrator.bwa", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        $id    = submit_step ( $id, "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
+       #$id    = submit_step ( $id, "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
     }
 }
 
@@ -166,18 +167,13 @@ sub submit_step
     my $file = shift;
     my @vars = @_;
     open OUT, ">tmp.pbs";
-   #my $script = `cat qsub_files/$file.pbs`;
-    my $script = `cat qsub_files/a.pbs`;
-    $"="\n";
-    print "vars: @vars\n";
+    my $script = `cat qsub_files/$file.pbs`;
     for ( my $i = 0; $i < @vars; $i += 2 )
     { 
         my $a = $vars[$i];
         my $b = $vars[$i+1];
         $script =~ s/$a/$b/g;
     }
-    print "$script\n";
-    my $in = <STDIN>;
     print OUT $script;
     chomp ( my $submit = ( $id ) ? `qsub -W depend=afterok:$id tmp.pbs` : `qsub tmp.pbs` );
     close OUT;

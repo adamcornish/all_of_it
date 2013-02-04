@@ -1,6 +1,6 @@
 BIN         /home/unmc_ngs/acornish/bin
 INDEX_DIR   /work/unmc_ngs/acornish/genomes/hg19/Sequence/BowtieIndex
-READS_DIR   /work/unmc_ngs/acornish/parallel/singh
+READS_DIR   /work/unmc_ngs/acornish/parallel/norgren/fastq_files/tmp
 FASTA       /work/unmc_ngs/acornish/genomes/hg19/Sequence/BowtieIndex/ucsc.hg19.fa
 DBSNP       /work/unmc_ngs/acornish/genomes/hg19/Annotation/Variation/dbsnp.vcf
 HAPMAP      /work/unmc_ngs/acornish/genomes/hg19/Annotation/Variation/hapmap.vcf
@@ -8,8 +8,8 @@ OMNI        /work/unmc_ngs/acornish/genomes/hg19/Annotation/Variation/omni.vcf
 MILLS       /work/unmc_ngs/acornish/genomes/hg19/Annotation/Variation/mills.vcf
 ANNOTATOR   snpeff
 SAMPLE_TYPE exome
-CANCER      yes
-ALIGNER     bowtie2
+CANCER      no
+ALIGNER     both
 GENOTYPER   gatk
 THREADS     32
-EXP_NAME    singh
+EXP_NAME    04L
