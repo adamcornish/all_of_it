@@ -28,6 +28,7 @@ my ($omni)        = $config =~ /OMNI\s+(\S+)/;
 my ($hapmap)      = $config =~ /HAPMAP\s+(\S+)/;
 my ($mills)       = $config =~ /MILLS\s+(\S+)/;
 my $gatk          = "$bin/GenomeAnalysisTK.jar";
+my $script        = "";
 chomp ( my $time  = `date +%T` );
 
 ######## Sanity Checks ########
@@ -78,8 +79,9 @@ die "The location of the 'HAPMAP' file, $hapmap, should be presented as an absol
 die "The location of the 'MILLS' file, $mills, should be presented as an absolute path, not a relative path. Exiting.\n"    unless ( $mills =~ /^\// );
 
 # Create needed directories
-system ( "mkdir $reads_dir/tmp" ) unless -d "$reads_dir/tmp";
-system ( "mkdir qsub" ) unless -d "qsub";
+system ( "mkdir $reads_dir/tmp" )  unless -d "$reads_dir/tmp";
+system ( "mkdir $reads_dir/logs" ) unless -d "$reads_dir/logs";
+system ( "mkdir $reads_dir/qsub" ) unless -d "$reads_dir/qsub";
 my ($ext)     = $fasta =~ /(\.fasta|\.fa)/;
 my ($fa_name) = $fasta =~ /.+\/(.+?)$ext/;
 
@@ -87,19 +89,48 @@ my ($fa_name) = $fasta =~ /.+\/(.+?)$ext/;
 # TODO make sure to change this so it's run on a job node and not the submit node
 unless ( `ls $index_dir/$fa_name*bt2 2> /dev/null` )
 {
-    system ( "mkdir logs" ) unless -d "logs";
     print "The 'INDEX_DIR' directory, $index_dir, does not contain any bowtie2 index files for the fasta file $fa_name.$ext. Creating them now.\n";
-    system ( "bowtie2-build $fasta $index_dir/$fa_name > logs/bowtie2-build.log 2> logs/bowtie2-build.log" );
+    system ( "bowtie2-build $fasta $index_dir/$fa_name > $reads_dir/logs/bowtie2-build.log 2> $reads_dir/logs/bowtie2-build.log" );
 }
 unless ( `ls $index_dir/$fa_name*bwt 2> /dev/null` )
 {
-    system ( "mkdir logs" ) unless -d "logs";
     print "The 'INDEX_DIR' directory, $index_dir, does not contain any bwa index files for the fasta file $fa_name.$ext. Creating them now.\n";
-    system ( "bwa index -a bwtsw $fasta > logs/bwa-index.log 2> logs/bwa-index.log" );
+    system ( "bwa index -a bwtsw $fasta > $reads_dir/logs/bwa-index.log 2> $reads_dir/logs/bwa-index.log" );
 }
 
 ## All checks have passed, so start the pipeline
-system ( "perl 00_align.pl -c $config_file" );
+
+chomp ( my @reads = `ls $reads_dir/*fastq` );
+
+for ( my $i = 0; $i < @reads; $i += 2 )
+{
+    my ($name) = $reads[$i] =~ /^.+\/(.+?)(?:_|\.)/;
+    my ($R1)   = $reads[$i] =~ /^.+\/(.+)/;
+    my ($R2)   = $reads[$i+1] =~ /^.+\/(.+)/;
+    my $submit = "";
+    if ( $aligner =~ /(?:bowtie2|both)/i )
+    {
+        my $aln_method    = ( $sample_type =~ /"exome"/i ) ? "--very-sensitive" : "--very-sensitive-local";
+        chomp ( my ($btx) = `ls $index_dir/*.4.bt2 | sed s/\.4\.bt2//` );
+        submit_step ( "00_aln.bt2",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "ALN_METHOD", $aln_method, "BTX", $btx, "R1", $R1, "R2", $R2 );
+        submit_step ( "01_sam_to_bam.bt2",        "NAME", $name, "READS_DIR", $reads_dir );
+        submit_step ( "02_sort.bt2",              "NAME", $name, "READS_DIR", $reads_dir );
+        submit_step ( "03_rm_dups.bt2",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
+        submit_step ( "04_indel_realigner.bt2",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        submit_step ( "05_base_recalibrator.bt2", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        submit_step ( "06_genotyper.bt2",         "NAME", $name, "READS_DIR", $reads_dir );
+    }
+    if ( $aligner =~ /(?:bwa|both)/i )
+    {
+        submit_step ( "00_aln.bwa",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "R1", $R1, "R2", $R2, "FASTA", $fasta );
+        submit_step ( "01_sam_to_bam.bwa",        "NAME", $name, "READS_DIR", $reads_dir );
+        submit_step ( "02_sort.bwa",              "NAME", $name, "READS_DIR", $reads_dir );
+        submit_step ( "03_rm_dups.bwa",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
+        submit_step ( "04_indel_realigner.bwa",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        submit_step ( "05_base_recalibrator.bwa", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        submit_step ( "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
+    }
+}
 
 sub usage
 {
@@ -129,6 +160,25 @@ sub usage
       NAME        The name you want to give to this experiment                  Serenity, bob, fancy_pink_ponies, I really don't care; just don't use spaces in the name.
 
 USAGE
+}
+
+sub submit_step
+{
+    my $file = shift;
+    my @vars = @_;
+    open OUT, ">tmp.pbs";
+   #my $script = `cat qsub_files/$file.pbs`;
+    my $script = `cat qsub_files/a.pbs`;
+    for ( my $i = 0; $i < @vars; $i += 2 )
+    { 
+        my $a = $vars[$i];
+        my $b = $vars[$i+1];
+        $script =~ s/$a/$b/g;
+    }
+    print OUT $script;
+   #chomp ( $submit = `qsub -W depend=afterok:$submit tmp.pbs` );
+    chomp ( my $submit = `qsub -W depend=afterok:$submit tmp.pbs` );
+    close OUT;
 }
 
 ##
