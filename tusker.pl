@@ -79,9 +79,7 @@ die "The location of the 'HAPMAP' file, $hapmap, should be presented as an absol
 die "The location of the 'MILLS' file, $mills, should be presented as an absolute path, not a relative path. Exiting.\n"    unless ( $mills =~ /^\// );
 
 # Create needed directories
-system ( "mkdir $reads_dir/tmp" )  unless -d "$reads_dir/tmp";
 system ( "mkdir $reads_dir/logs" ) unless -d "$reads_dir/logs";
-system ( "mkdir $reads_dir/qsub" ) unless -d "$reads_dir/qsub";
 my ($ext)     = $fasta =~ /(\.fasta|\.fa)/;
 my ($fa_name) = $fasta =~ /.+\/(.+?)$ext/;
 
@@ -112,23 +110,23 @@ for ( my $i = 0; $i < @reads; $i += 2 )
     {
         my $aln_method    = ( $sample_type =~ /"exome"/i ) ? "--very-sensitive" : "--very-sensitive-local";
         chomp ( my ($btx) = `ls $index_dir/*.4.bt2 | sed s/\.4\.bt2//` );
-        submit_step ( "00_aln.bt2",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "ALN_METHOD", $aln_method, "BTX", $btx, "R1", $R1, "R2", $R2 );
-        submit_step ( "01_sam_to_bam.bt2",        "NAME", $name, "READS_DIR", $reads_dir );
-        submit_step ( "02_sort.bt2",              "NAME", $name, "READS_DIR", $reads_dir );
-        submit_step ( "03_rm_dups.bt2",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
-        submit_step ( "04_indel_realigner.bt2",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        submit_step ( "05_base_recalibrator.bt2", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        submit_step ( "06_genotyper.bt2",         "NAME", $name, "READS_DIR", $reads_dir );
+        my $id = submit_step ( "",  "00_aln.bt2",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "ALN_METHOD", $aln_method, "BTX", $btx, "R1", $R1, "R2", $R2 );
+        $id    = submit_step ( $id, "01_sam_to_bam.bt2",        "NAME", $name, "READS_DIR", $reads_dir );
+        $id    = submit_step ( $id, "02_sort.bt2",              "NAME", $name, "READS_DIR", $reads_dir );
+        $id    = submit_step ( $id, "03_rm_dups.bt2",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
+        $id    = submit_step ( $id, "04_indel_realigner.bt2",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "05_base_recalibrator.bt2", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "06_genotyper.bt2",         "NAME", $name, "READS_DIR", $reads_dir );
     }
     if ( $aligner =~ /(?:bwa|both)/i )
     {
-        submit_step ( "00_aln.bwa",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "R1", $R1, "R2", $R2, "FASTA", $fasta );
-        submit_step ( "01_sam_to_bam.bwa",        "NAME", $name, "READS_DIR", $reads_dir );
-        submit_step ( "02_sort.bwa",              "NAME", $name, "READS_DIR", $reads_dir );
-        submit_step ( "03_rm_dups.bwa",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
-        submit_step ( "04_indel_realigner.bwa",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        submit_step ( "05_base_recalibrator.bwa", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        submit_step ( "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
+        my $id = submit_step ( "",  "00_aln.bwa",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "R1", $R1, "R2", $R2, "FASTA", $fasta );
+        $id    = submit_step ( $id, "01_sam_to_bam.bwa",        "NAME", $name, "READS_DIR", $reads_dir );
+        $id    = submit_step ( $id, "02_sort.bwa",              "NAME", $name, "READS_DIR", $reads_dir );
+        $id    = submit_step ( $id, "03_rm_dups.bwa",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
+        $id    = submit_step ( $id, "04_indel_realigner.bwa",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "05_base_recalibrator.bwa", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
     }
 }
 
@@ -164,21 +162,26 @@ USAGE
 
 sub submit_step
 {
+    my $id   = shift;
     my $file = shift;
     my @vars = @_;
     open OUT, ">tmp.pbs";
    #my $script = `cat qsub_files/$file.pbs`;
     my $script = `cat qsub_files/a.pbs`;
+    $"="\n";
+    print "vars: @vars\n";
     for ( my $i = 0; $i < @vars; $i += 2 )
     { 
         my $a = $vars[$i];
         my $b = $vars[$i+1];
         $script =~ s/$a/$b/g;
     }
+    print "$script\n";
+    my $in = <STDIN>;
     print OUT $script;
-   #chomp ( $submit = `qsub -W depend=afterok:$submit tmp.pbs` );
-    chomp ( my $submit = `qsub -W depend=afterok:$submit tmp.pbs` );
+    chomp ( my $submit = ( $id ) ? `qsub -W depend=afterok:$id tmp.pbs` : `qsub tmp.pbs` );
     close OUT;
+    return $submit;
 }
 
 ##
