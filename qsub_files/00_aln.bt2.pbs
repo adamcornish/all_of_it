@@ -1,0 +1,9 @@
+#!/bin/sh
+#PBS -N NAME.bt2
+#PBS -l nodes=1:ppn=THREADS
+#PBS -l mem=8GB
+#PBS -l walltime=4:00:00
+#PBS -e READS_DIR/logs/NAME.bt2.stderr
+#PBS -o READS_DIR/logs/NAME.bt2.stdout
+cd READS_DIR
+bowtie2 --rg-id NAME --rg PL:illumina --rg PU:NAME --rg LB:NAME --rg SM:NAME ALN_METHOD -x BTX -p THREADS -1 R1 -2 R2 -S tmp/NAME.bt2.sam

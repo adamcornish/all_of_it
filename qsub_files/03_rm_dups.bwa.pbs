@@ -1,0 +1,9 @@
+#!/bin/sh
+#PBS -N NAME.bwa.mark_duplicates
+#PBS -l select=1
+#PBS -l mem=8GB
+#PBS -l walltime=8:00:00
+#PBS -e /work/unmc_ngs/acornish/NAME.bwa.mark_duplicates.stderr
+#PBS -o /work/unmc_ngs/acornish/NAME.bwa.mark_duplicates.stdout
+cd READS_DIR
+java -jar BIN/MarkDuplicates.jar I=tmp/NAME.bwa.sorted.bam O=tmp/NAME.bwa.dup_removed.bam REMOVE_DUPLICATES=true M=tmp/NAME.bwa.mark_dups_metrics_file

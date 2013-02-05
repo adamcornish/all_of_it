@@ -86,14 +86,14 @@ my ($fa_name) = $fasta =~ /.+\/(.+?)$ext/;
 
 # Make index files if they don't exist
 # TODO make sure to change this so it's run on a job node and not the submit node
-unless ( `ls $index_dir/$fa_name*bt2 2> /dev/null` )
+unless ( `ls $index_dir/$fa_name.*.bt2 2> /dev/null` )
 {
-    print "The 'INDEX_DIR' directory, $index_dir, does not contain any bowtie2 index files for the fasta file $fa_name.$ext. Creating them now.\n";
+    print "The 'INDEX_DIR' directory, $index_dir, does not contain any bowtie2 index files for the fasta file, $fasta. Creating them now.\n";
     system ( "bowtie2-build $fasta $index_dir/$fa_name > $reads_dir/logs/bowtie2-build.log 2> $reads_dir/logs/bowtie2-build.log" );
 }
-unless ( `ls $index_dir/$fa_name*.bwt 2> /dev/null` )
+unless ( `ls $fasta.bwt 2> /dev/null` )
 {
-    print "The 'INDEX_DIR' directory, $index_dir, does not contain any bwa index files for the fasta file $fa_name.$ext. Creating them now.\n";
+    print "The 'INDEX_DIR' directory, $index_dir, does not contain any bwa index files for the fasta file, $fasta. Creating them now.\n";
     system ( "bwa index -a bwtsw $fasta > $reads_dir/logs/bwa-index.log 2> $reads_dir/logs/bwa-index.log" );
 }
 
@@ -130,6 +130,7 @@ for ( my $i = 0; $i < @reads; $i += 2 )
        #$id    = submit_step ( $id, "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
     }
 }
+system ( "rm tmp.pbs" );
 
 sub usage
 {

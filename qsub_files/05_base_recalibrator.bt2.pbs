@@ -1,0 +1,10 @@
+#!/bin/sh
+#PBS -N NAME.bt2.base_recalibrator
+#PBS -l nodes=1:ppn=THREADS
+#PBS -l mem=32GB
+#PBS -l walltime=24:00:00
+#PBS -e /work/unmc_ngs/acornish/NAME.bt2.base_recalibrator.stderr
+#PBS -o /work/unmc_ngs/acornish/NAME.bt2.base_recalibrator.stdout
+cd READS_DIR
+java -jar BIN/GenomeAnalysisTK.jar -T BaseRecalibrator -R FASTA -knownSites DBSNP -I tmp/NAME.indels_realigned.bt2.bam -o tmp/NAME.recal_data.bt2.grp
+java -jar BIN/GenomeAnalysisTK.jar -T PrintReads -R FASTA -BQSR tmp/NAME.recal_data.bt2.grp -I tmp/NAME.indels_realigned.bt2.bam -o tmp/NAME.BQSR.bt2.bam
