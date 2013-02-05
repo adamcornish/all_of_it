@@ -9,7 +9,7 @@ MILLS       /work/unmc_ngs/acornish/genomes/hg19/Annotation/Variation/mills.vcf
 ANNOTATOR   snpeff
 SAMPLE_TYPE exome
 CANCER      no
-ALIGNER     both
+ALIGNER     bwa
 GENOTYPER   gatk
 THREADS     32
 EXP_NAME    04L

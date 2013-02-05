@@ -91,7 +91,7 @@ unless ( `ls $index_dir/$fa_name*bt2 2> /dev/null` )
     print "The 'INDEX_DIR' directory, $index_dir, does not contain any bowtie2 index files for the fasta file $fa_name.$ext. Creating them now.\n";
     system ( "bowtie2-build $fasta $index_dir/$fa_name > $reads_dir/logs/bowtie2-build.log 2> $reads_dir/logs/bowtie2-build.log" );
 }
-unless ( `ls $index_dir/$fa_name*bwt 2> /dev/null` )
+unless ( `ls $index_dir/$fa_name*.bwt 2> /dev/null` )
 {
     print "The 'INDEX_DIR' directory, $index_dir, does not contain any bwa index files for the fasta file $fa_name.$ext. Creating them now.\n";
     system ( "bwa index -a bwtsw $fasta > $reads_dir/logs/bwa-index.log 2> $reads_dir/logs/bwa-index.log" );
@@ -113,7 +113,7 @@ for ( my $i = 0; $i < @reads; $i += 2 )
         chomp ( my ($btx) = `ls $index_dir/*.4.bt2 | sed s/\.4\.bt2//` );
         my $id = submit_step ( "",  "00_aln.bt2",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "ALN_METHOD", $aln_method, "BTX", $btx, "R1", $R1, "R2", $R2 );
         $id    = submit_step ( $id, "01_sam_to_bam.bt2",        "NAME", $name, "READS_DIR", $reads_dir );
-        $id    = submit_step ( $id, "02_sort.bt2",              "NAME", $name, "READS_DIR", $reads_dir );
+        $id    = submit_step ( $id, "02_sort.bt2",              "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
         $id    = submit_step ( $id, "03_rm_dups.bt2",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
         $id    = submit_step ( $id, "04_indel_realigner.bt2",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
         $id    = submit_step ( $id, "05_base_recalibrator.bt2", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
@@ -123,7 +123,7 @@ for ( my $i = 0; $i < @reads; $i += 2 )
     {
         my $id = submit_step ( "",  "00_aln.bwa",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "R1", $R1, "R2", $R2, "FASTA", $fasta );
         $id    = submit_step ( $id, "01_sam_to_bam.bwa",        "NAME", $name, "READS_DIR", $reads_dir );
-        $id    = submit_step ( $id, "02_sort.bwa",              "NAME", $name, "READS_DIR", $reads_dir );
+        $id    = submit_step ( $id, "02_sort.bwa",              "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
         $id    = submit_step ( $id, "03_rm_dups.bwa",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
         $id    = submit_step ( $id, "04_indel_realigner.bwa",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
         $id    = submit_step ( $id, "05_base_recalibrator.bwa", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
