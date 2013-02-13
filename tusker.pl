@@ -10,7 +10,11 @@ my $config_file = $opt{c};
 my $config      = `cat $config_file`;
 
 ######## Start Variables ########
-# TODO add option for dry run; i.e. do not do system ( "qsub submit_script.qsub" ); unless $dry_run = false
+# TODO 
+#      : Add option for dry run; i.e. do not do system ( "qsub submit_script.qsub" ); unless $dry_run = false
+#      : Get cancer variable involved (perform filtering based on % other than strict homozygous / heterzygous)
+#      : Get exp_name variable involved - perform variant calling with all bams in mind
+#      : Get sample_type variable involved - run tophat, tophat-fusion, and remove splice site variants
 
 my ($bin)         = $config =~ /BIN\s+(\S+)/;
 my ($index_dir)   = $config =~ /INDEX_DIR\s+(\S+)/;
@@ -111,23 +115,23 @@ for ( my $i = 0; $i < @reads; $i += 2 )
     {
         my $aln_method    = ( $sample_type =~ /"exome"/i ) ? "--very-sensitive" : "--very-sensitive-local";
         chomp ( my ($btx) = `ls $index_dir/*.4.bt2 | sed s/\.4\.bt2//` );
-        my $id = submit_step ( "",  "00_aln.bt2",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "ALN_METHOD", $aln_method, "BTX", $btx, "R1", $R1, "R2", $R2 );
-        $id    = submit_step ( $id, "01_sam_to_bam.bt2",        "NAME", $name, "READS_DIR", $reads_dir );
-        $id    = submit_step ( $id, "02_sort.bt2",              "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
-        $id    = submit_step ( $id, "03_rm_dups.bt2",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
-        $id    = submit_step ( $id, "04_indel_realigner.bt2",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        $id    = submit_step ( $id, "05_base_recalibrator.bt2", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-       #$id    = submit_step ( $id, "06_genotyper.bt2",         "NAME", $name, "READS_DIR", $reads_dir );
+        my $id = submit_step ( "",  "00_aln.bt2",                  "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "ALN_METHOD", $aln_method, "BTX", $btx, "R1", $R1, "R2", $R2 );
+        $id    = submit_step ( $id, "01_prep_bams.bt2",            "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
+        $id    = submit_step ( $id, "02_indel_realigner.bt2",      "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "03_base_recalibrator.bt2",    "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "04_genotyper.GATK.bt2",       "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "05_recalibrate.GATK.bt2",     "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp, "HAPMAP", $hapmap, "OMNI", $omni, "MILLS", $mills );
+        $id    = submit_step ( $id, "06_filter_variants.GATK.bt2", "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin, "FASTA", $fasta );
     }
     if ( $aligner =~ /(?:bwa|both)/i )
     {
-        my $id = submit_step ( "",  "00_aln.bwa",               "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "R1", $R1, "R2", $R2, "FASTA", $fasta );
-        $id    = submit_step ( $id, "01_sam_to_bam.bwa",        "NAME", $name, "READS_DIR", $reads_dir );
-        $id    = submit_step ( $id, "02_sort.bwa",              "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
-        $id    = submit_step ( $id, "03_rm_dups.bwa",           "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
-        $id    = submit_step ( $id, "04_indel_realigner.bwa",   "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-        $id    = submit_step ( $id, "05_base_recalibrator.bwa", "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
-       #$id    = submit_step ( $id, "06_genotyper.bwa",         "NAME", $name, "READS_DIR", $reads_dir );
+        my $id = submit_step ( "",  "00_aln.bwa",                  "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "R1", $R1, "R2", $R2, "FASTA", $fasta );
+        $id    = submit_step ( $id, "01_prep_bams.bwa",            "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin );
+        $id    = submit_step ( $id, "02_indel_realigner.bwa",      "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "03_base_recalibrator.bwa",    "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "04_genotyper.GATK.bwa",       "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp );
+        $id    = submit_step ( $id, "05_recalibrate.GATK.bwa",     "NAME", $name, "READS_DIR", $reads_dir, "THREADS", $threads, "BIN", $bin, "FASTA", $fasta, "DBSNP", $dbsnp, "HAPMAP", $hapmap, "OMNI", $omni, "MILLS", $mills );
+        $id    = submit_step ( $id, "06_filter_variants.GATK.bwa", "NAME", $name, "READS_DIR", $reads_dir, "BIN", $bin, "FASTA", $fasta );
     }
 }
 system ( "rm tmp.pbs" );

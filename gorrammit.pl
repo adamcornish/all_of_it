@@ -71,7 +71,7 @@ my $snp_filters = "-filter 'QD < 2.0' -filterName 'QD' ".
                   "-filter 'DP < 8' -filterName 'DP' ".
                   "-filter 'MQ < 40.0' -filterName 'MQ' ".
                   "-filter 'FS > 60.0' -filterName 'FS' ".
-                  "-filter 'HaplotypeScore > 13.0' -filterName 'HaplotypeScore' ".
+                  "-filter 'HaplotypeScore > 40.0' -filterName 'HaplotypeScore' ".
                   "-filter 'MQRankSum < -12.5' -filterName 'MQRankSum' ".
                   "-filter 'ReadPosRankSum < -8.0' -filterName 'ReadPosRankSum'";
 my $indel_filts = "-filter 'QD < 2.0' -filterName 'QD' ".
