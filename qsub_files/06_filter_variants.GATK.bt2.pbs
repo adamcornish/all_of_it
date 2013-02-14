@@ -1,0 +1,23 @@
+#!/bin/sh
+#PBS -N NAME.bt2.filter_variants.GATK
+#PBS -l select=1
+#PBS -l mem=8GB
+#PBS -l walltime=1:00:00
+#PBS -e READS_DIR/logs/NAME.bt2.filter_variants.GATK.stderr
+#PBS -o READS_DIR/logs/NAME.bt2.filter_variants.GATK.stdout
+cd READS_DIR
+java -jar BIN/GenomeAnalysisTK.jar -T VariantFiltration  -R FASTA -V NAME.bt2.recalibrated.snv.vcf -o NAME.bt2.filtered.snv.vcf \
+   -filter 'QD < 2.0'  -filterName 'QD' \
+   -filter 'DP < 8'    -filterName 'DP' \
+   -filter 'MQ < 30.0' -filterName 'MQ' \
+   -filter 'FS > 60.0' -filterName 'FS' \
+   -filter 'HaplotypeScore > 40.0' -filterName 'HaplotypeScore' \
+   -filter 'MQRankSum < -12.5'     -filterName 'MQRankSum' \
+   -filter 'ReadPosRankSum < -8.0' -filterName 'ReadPosRankSum' \
+java -jar BIN/GenomeAnalysisTK.jar -T VariantFiltration  -R FASTA -V NAME.bt2.recalibrated.indel.vcf -o NAME.bt2.filtered.indel.vcf 
+   -filter 'QD < 2.0'   -filterName 'QD' \
+   -filter 'DP < 8'     -filterName 'DP' \
+   -filter 'MQ < 30.0'  -filterName 'MQ' \
+   -filter 'FS > 200.0' -filterName 'FS' \
+   -filter 'ReadPosRankSum < -20.0' -filterName 'ReadPosRankSum' \
+   -filter 'InbreedingCoeff < -0.8' -filterName 'InbreedingCoeff' \

@@ -1,0 +1,13 @@
+#!/bin/sh
+#PBS -N NAME.bwa.prep_bams
+#PBS -l select=1
+#PBS -l mem=4GB
+#PBS -l walltime=10:00:00
+#PBS -e READS_DIR/logs/NAME.bwa.prep_bams.stderr
+#PBS -o READS_DIR/logs/NAME.bwa.prep_bams.stdout
+cd READS_DIR
+samtools view -bS tmp/NAME.bwa.sam -o tmp/NAME.bwa.bam
+java -jar BIN/SortSam.jar INPUT=tmp/NAME.bwa.bam OUTPUT=tmp/NAME.bwa.sorted.bam SORT_ORDER=coordinate VALIDATION_STRINGENCY=SILENT
+java -jar BIN/MarkDuplicates.jar I=tmp/NAME.bwa.sorted.bam O=tmp/NAME.bwa.dup_removed.bam REMOVE_DUPLICATES=true M=tmp/NAME.bwa.mark_dups_metrics_file
+cd tmp
+samtools index NAME.bwa.dup_removed.bam

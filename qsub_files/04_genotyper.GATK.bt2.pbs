@@ -1,0 +1,10 @@
+#!/bin/sh
+#PBS -N NAME.bt2.genotyper.GATK
+#PBS -l nodes=1:ppn=THREADS
+#PBS -l mem=32GB
+#PBS -l walltime=24:00:00
+#PBS -e READS_DIR/logs/NAME.bt2.genotyper.GATK.stderr
+#PBS -o READS_DIR/logs/NAME.bt2.genotyper.GATK.stdout
+cd READS_DIR
+java -jar BIN/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt THREADS -R FASTA -I tmp/NAME.BQSR.bt2.bam -o NAME.bt2.raw.snv.vcf   -glm SNP   -D DBSNP
+java -jar BIN/GenomeAnalysisTK.jar -T UnifiedGenotyper -nt THREADS -R FASTA -I tmp/NAME.BQSR.bt2.bam -o NAME.bt2.raw.indel.vcf -glm INDEL -D DBSNP

@@ -1,0 +1,10 @@
+#!/bin/sh
+#PBS -N NAME.bwa.indel_realigner
+#PBS -l nodes=1:ppn=THREADS
+#PBS -l mem=32GB
+#PBS -l walltime=24:00:00
+#PBS -e READS_DIR/logs/NAME.bwa.indel_realigner.stderr
+#PBS -o READS_DIR/logs/NAME.bwa.indel_realigner.stdout
+cd READS_DIR
+java -jar BIN/GenomeAnalysisTK.jar -T RealignerTargetCreator -R FASTA -I tmp/NAME.bwa.dup_removed.bam -known DBSNP -o tmp/NAME.indel.bwa.intervals
+java -jar BIN/GenomeAnalysisTK.jar -T IndelRealigner         -R FASTA -I tmp/NAME.bt2.dup_removed.bam -known DBSNP -o tmp/NAME.indels_realigned.bt2.bam --maxReadsForRealignment 100000 --maxReadsInMemory 1000000 -targetIntervals tmp/NAME.indel.bt2.intervals

@@ -1,0 +1,21 @@
+#!/bin/sh
+#PBS -N NAME.bt2.recalibrate.GATK
+#PBS -l nodes=1:ppn=THREADS
+#PBS -l mem=32GB
+#PBS -l walltime=24:00:00
+#PBS -e READS_DIR/logs/NAME.bt2.recalibrate.GATK.stderr
+#PBS -o READS_DIR/logs/NAME.bt2.recalibrate.GATK.stdout
+cd READS_DIR
+java -jar BIN/GenomeAnalysisTK.jar -T VariantRecalibrator -nt THREADS -R FASTA -input NAME.bt2.raw.snv.vcf -mG 4 -mode SNP \
+    -resource:hapmap,VCF,known=false,training=true,truth=true,prior=15.0 HAPMAP \
+    -resource:omni,VCF,known=false,training=true,truth=false,prior=12.0 OMNI \
+    -resource:dbsnp,VCF,known=true,training=false,truth=false,prior=8.0 DBSNP \
+    -an QD -an HaplotypeScore -an MQRankSum -an ReadPosRankSum -an MQ -an FS -an DP \
+    -recalFile tmp/NAME.bt2.snv.recal -tranchesFile tmp/NAME.bt2.snv.model
+java -jar BIN/GenomeAnalysisTK.jar -T VariantRecalibrator -nt THREADS -R FASTA -input NAME.bt2.raw.indel.vcf -mG 4 -mode INDEL \
+    -resource:mills,VCF,known=true,training=true,truth=true,prior=12.0 MILLS \
+    -resource:dbsnp,VCF,known=true,training=false,truth=false,prior=8.0 DBSNP \
+    -an QD -an ReadPosRankSum -an FS \
+    -recalFile tmp/NAME.bt2.indel.recal -tranchesFile tmp/NAME.bt2.indel.model
+java -jar BIN/GenomeAnalysisTK.jar -T ApplyRecalibration -R FASTA -input NAME.bt2.raw.snv.vcf   -ts_filter_level 99.0 -tranchesFile tmp/NAME.bt2.snv.model   -recalFile tmp/NAME.bt2.snv.recal   -o NAME.bt2.recalibrated.snv.vcf
+java -jar BIN/GenomeAnalysisTK.jar -T ApplyRecalibration -R FASTA -input NAME.bt2.raw.indel.vcf -ts_filter_level 95.0 -tranchesFile tmp/NAME.bt2.indel.model -recalFile tmp/NAME.bt2.indel.recal -o NAME.bt2.recalibrated.indel.vcf
