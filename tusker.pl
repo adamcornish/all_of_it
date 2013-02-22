@@ -155,7 +155,6 @@ sub usage
       HAPMAP      Absolute location of the hapmap vcf file                      Not applicable
       OMNI        Absolute location of the omni vcf file                        Not applicable
       MILLS       Absolute location of the mills vcf file                       Not applicable
-      ANNOTATOR   The variant annotator to use                                  snpEff, ANNOVAR
       SAMPLE_TYPE The type of sequencing that was done                          exome, rnaseq
       CANCER      Whether or not this is a cancer sample                        yes, no, true, false
       ALIGNER     The aligner software that to use                              bowtie2, bwa, both
